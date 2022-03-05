@@ -6,7 +6,7 @@ from Game.ForwardModel import ForwardModel
 from Game.Heuristic import Heuristic
 from Players.Player import Player
 
-class OTLAPlayer(Player):
+class IAsauriosPlayer(Player):
     def __init__(self):
         self.fm = ForwardModel()
         self.ht = Heuristic()
