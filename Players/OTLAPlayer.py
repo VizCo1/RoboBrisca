@@ -110,11 +110,11 @@ class IAsuariosHeuristic:
 
         # Hay 1 carta, soy el segundo jugador
         if observation.playing_cards.len() == 1:
-            is_better = not self.check_not_better_card(player_card, observation, 1)
+            is_better = not self.check_not_better_card(player_card, observation, 0)
 
         # Hay 2 cartas, soy el tercer jugador
         elif observation.playing_cards.len() == 2:
-            if self.check_not_better_card(player_card, observation, 2):
+            if self.check_not_better_card(player_card, observation, 1):
                 is_better = not self.check_not_better_card(0, observation, 1)
 
         # Hay 3 cartas, soy el cuarto jugador
