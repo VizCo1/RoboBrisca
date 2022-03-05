@@ -9,6 +9,7 @@ from Game.ForwardModel import ForwardModel
 from Game.BriscaGame import BriscaGame
 from Game.GameState import GameState
 from Game.Heuristic import Heuristic
+from Players.OTLAPlayer import IAsauriosPlayer
 from Players.AlwaysFirstPlayer import AlwaysFirstPlayer
 from Players.OSLAPlayer import OSLAPlayer
 from Players.RandomPlayer import RandomPlayer
@@ -47,7 +48,7 @@ if __name__ == '__main__':
     controlling_time = True  # If the player time to think is going to be controlled True/False
     save_game = True         # If the game is saved to be studied in the future True/False
     save_name = "Out/game"
-    n_matches = 10          # Matches between two bots
+    n_matches = 100          # Matches between two bots
     sleep_time = 0           # time to sleep between games, It's just to add excitement for public watching the games
 
     game = BriscaGame()             # Game class
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     heuristic = Heuristic()         # Heuristic to known how good is to be in a particular game state
     forward_model = ForwardModel()  # Rules of the game
 
-    l_players = [RandomPlayer(), OSLAPlayer()]  # List of players of the competition
+    l_players = [IAsauriosPlayer(), OSLAPlayer()]  # List of players of the competition
     print_information(n_matches, l_players)
 
     l_points = [0.0 for i in range(len(l_players))]   # 0.0 points for each player
