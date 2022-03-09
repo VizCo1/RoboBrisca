@@ -44,8 +44,9 @@ class IAsauriosPlayer(Player):
         # poner un while para evitar el fallo de tiempo
         while (time.time() - initial_time < time_difference):
             j = 0
+            new_obs_rand = observation.get_randomized_clone()
             for action in list_actions:
-                new_obs = observation.clone()
+                new_obs = new_obs_rand.clone()
                 # Yo juego mi carta
                 value = self.forward_model.play(new_obs, action, self.heuristic)
                 n = n + 1
