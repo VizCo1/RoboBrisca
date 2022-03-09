@@ -12,12 +12,13 @@ from Players.Player import Player
 class IAsauriosPlayer(Player):
     def __init__(self):
         self.forward_model = ForwardModel()
-        self.heuristic = Heuristic()
+        self.heuristic = Heuristic()  # Mon was here!!//
 
     def __str__(self):
         return "IAsauriosPlayer"
 
     def think(self, observation, budget):
+
         initial_time = time.time()
         time_difference = budget * 0.9  # para tener tiempo de margen
 
@@ -76,19 +77,20 @@ class IAsauriosPlayer(Player):
             if values[i] > max:
                 max = values[i]
                 index = i
-        print(len(list_actions))
+        # print(len(list_actions))
         return list_actions[index]
 
+
 class IAsuariosHeuristic:
+    def check_not_better_card(self, player_card, observation, others_card):
+        if is_better_card(player_card, observation.playing_cards.get_card(others_card),
+                          observation.trump_card, observation.playing_cards.get_card(0)):
+            return False
+        return True
+
     # Returns the points that the player_id is going to win in the actual round.
     # If the player is going to lose, then returns -points.
     # player_id = gs.turn
-    def check_not_better_card(self, player_card, observation, previous_card):
-        if not is_better_card(player_card, observation.playing_cards.get_card(previous_card),
-                              observation.trump_card, observation.playing_cards.get_card(0)):
-            return True
-        return False
-
     def get_score(self, observation, player_id):
 
         if observation.playing_cards.len() == 1:
@@ -96,40 +98,41 @@ class IAsuariosHeuristic:
 
         cards = observation.playing_cards.get_cards()
         points = 0
+        #Palo de la primera carta
+        #Puntos de mi equipo
+        #Puntos del otro equipo
         for card in cards:
             points += card.get_value()
 
         player_card = observation.playing_cards.get_last_card()
 
-        # Player_id es el id del jugador que llama a la funcion
-        # Si player_id == 0 --> pana_id == 2
-        # Si player_id == 1 --> pana_id == 3
-        # Si eres 0 no se pone nada esta arriba ya hecho
-        # Si eres 2 --> si mi carta es peor que la del player_id_1 --> miro si carta de player_id_0 es mejor o peor que la de player_id_1
+        # Obtener el card.get_value() de tu equipo y el del otro equipo no se
+        # Tener en cuenta el palo de las cartas ?¿
 
-        is_better = True
+        # is_better = True
 
         # Hay 1 carta, soy el segundo jugador
         if observation.playing_cards.len() == 1:
-            is_better = not self.check_not_better_card(player_card, observation, 0)
+            if self.check_not_better_card(player_card, observation, 0):
+                return -points
 
         # Hay 2 cartas, soy el tercer jugador
         elif observation.playing_cards.len() == 2:
             if self.check_not_better_card(player_card, observation, 1):
-                is_better = not self.check_not_better_card(0, observation, 1)
+                if self.check_not_better_card(observation.playing_cards.get_card(0), observation, 1):
+                    return -points
 
         # Hay 3 cartas, soy el cuarto jugador
-        # Comparar mi carta con el tercer jugador
         elif observation.playing_cards.len() == 3:
-            is_better = not self.check_not_better_card(player_card, observation)
+            if self.check_not_better_card(player_card, observation, 2):
+                if self.check_not_better_card(player_card, observation, 0):
+                    if self.check_not_better_card(observation.playing_cards.get_card(1), observation, 2):
+                        if self.check_not_better_card(observation.playing_cards.get_card(1), observation, 0):
+                            return -points
 
-        for i in range(observation.playing_cards.len() - 1):
-            if not is_better_card(player_card, observation.playing_cards.get_card(i),
-                                  observation.trump_card, observation.playing_cards.get_card(0)):
-                is_better = False
-                break
+        return points
 
-        if is_better:
-            return points
-        else:
-            return -points
+        # if is_better:
+        #    return points
+        # else:
+        #    return -points
