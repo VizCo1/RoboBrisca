@@ -63,12 +63,13 @@ class IAsauriosPlayer(Player):
                     other += 1
 
                 # Guarda el valor de nuestras cartas
-                # print(j)
-                values[j] += value * factor
+
+                values[j] += value # * factor
 
                 j += 1
 
         # buscar el maximo en values una vez que hemos salido de los bucles
+        # print(values)
         max = -math.inf
         index = -1
         for i in range(len(list_actions)):
@@ -76,61 +77,62 @@ class IAsauriosPlayer(Player):
                 max = values[i]
                 index = i
         # print(len(list_actions))
+        # print(index)
         return list_actions[index]
 
 
-class IAsuariosHeuristic:
-    def check_not_better_card(self, player_card, observation, others_card):
-        if is_better_card(player_card, observation.playing_cards.get_card(others_card),
-                          observation.trump_card, observation.playing_cards.get_card(0)):
-            return False
-        return True
-
-    # Returns the points that the player_id is going to win in the actual round.
-    # If the player is going to lose, then returns -points.
-    # player_id = gs.turn
-    def get_score(self, observation, player_id):
-
-        if observation.playing_cards.len() == 1:
-            return observation.playing_cards.get_card(0).get_value()
-
-        cards = observation.playing_cards.get_cards()
-        points = 0
-        #Palo de la primera carta
-        #Puntos de mi equipo
-        #Puntos del otro equipo
-        for card in cards:
-            points += card.get_value()
-
-        player_card = observation.playing_cards.get_last_card()
-
-        # Obtener el card.get_value() de tu equipo y el del otro equipo no se
-        # Tener en cuenta el palo de las cartas ?¿
-
-        # is_better = True
-
-        # Hay 1 carta, soy el segundo jugador
-        if observation.playing_cards.len() == 1:
-            if self.check_not_better_card(player_card, observation, 0):
-                return -points
-
-        # Hay 2 cartas, soy el tercer jugador
-        elif observation.playing_cards.len() == 2:
-            if self.check_not_better_card(player_card, observation, 1):
-                if self.check_not_better_card(observation.playing_cards.get_card(0), observation, 1):
-                    return -points
-
-        # Hay 3 cartas, soy el cuarto jugador
-        elif observation.playing_cards.len() == 3:
-            if self.check_not_better_card(player_card, observation, 2):
-                if self.check_not_better_card(player_card, observation, 0):
-                    if self.check_not_better_card(observation.playing_cards.get_card(1), observation, 2):
-                        if self.check_not_better_card(observation.playing_cards.get_card(1), observation, 0):
-                            return -points
-
-        return points
-
-        # if is_better:
-        #    return points
-        # else:
-        #    return -points
+# class IAsuariosHeuristic:
+#     def check_not_better_card(self, player_card, observation, others_card):
+#         if is_better_card(player_card, observation.playing_cards.get_card(others_card),
+#                           observation.trump_card, observation.playing_cards.get_card(0)):
+#             return False
+#         return True
+#
+#     # Returns the points that the player_id is going to win in the actual round.
+#     # If the player is going to lose, then returns -points.
+#     # player_id = gs.turn
+#     def get_score(self, observation, player_id):
+#
+#         if observation.playing_cards.len() == 1:
+#             return observation.playing_cards.get_card(0).get_value()
+#
+#         cards = observation.playing_cards.get_cards()
+#         points = 0
+#         #Palo de la primera carta
+#         #Puntos de mi equipo
+#         #Puntos del otro equipo
+#         for card in cards:
+#             points += card.get_value()
+#
+#         player_card = observation.playing_cards.get_last_card()
+#
+#         # Obtener el card.get_value() de tu equipo y el del otro equipo no se
+#         # Tener en cuenta el palo de las cartas ?¿
+#
+#         # is_better = True
+#
+#         # Hay 1 carta, soy el segundo jugador
+#         if observation.playing_cards.len() == 1:
+#             if self.check_not_better_card(player_card, observation, 0):
+#                 return -points
+#
+#         # Hay 2 cartas, soy el tercer jugador
+#         elif observation.playing_cards.len() == 2:
+#             if self.check_not_better_card(player_card, observation, 1):
+#                 if self.check_not_better_card(observation.playing_cards.get_card(0), observation, 1):
+#                     return -points
+#
+#         # Hay 3 cartas, soy el cuarto jugador
+#         elif observation.playing_cards.len() == 3:
+#             if self.check_not_better_card(player_card, observation, 2):
+#                 if self.check_not_better_card(player_card, observation, 0):
+#                     if self.check_not_better_card(observation.playing_cards.get_card(1), observation, 2):
+#                         if self.check_not_better_card(observation.playing_cards.get_card(1), observation, 0):
+#                             return -points
+#
+#         return points
+# 
+#         # if is_better:
+#         #    return points
+#         # else:
+#         #    return -points
