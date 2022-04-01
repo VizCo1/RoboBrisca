@@ -30,18 +30,14 @@ class IAsauriosPlayer(Player):
         values = [0, 0, 0]
 
         player_id = observation.turn
-        n = observation.playing_cards.len()
+        played_cards = observation.playing_cards.len()
         # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        if n == 0 or n == 2:
+        if played_cards == 0 or played_cards == 2:
             factor = -1
         else:
             factor = 1
-        # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        # AAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
-        # while iteraciones
-        # Recoger cartas, barajar y volver a repartir
-
-        j = 0
         # poner un while para evitar el fallo de tiempo
         while (time.time() - initial_time < time_difference):
             j = 0
@@ -50,18 +46,20 @@ class IAsauriosPlayer(Player):
                 new_obs = new_obs_rand.clone()
                 # Yo juego mi carta
                 value = self.forward_model.play(new_obs, action, self.heuristic)
-                n = n + 1
+                played_cards = played_cards + 1
                 other = player_id + 1
-                while n < 4:
+
+                # while iteraciones
+                # Recoger cartas, barajar y volver a repartir
+                while played_cards < 4:
                     if other == 4:
                         other = 0
                     # Seleccionar una carta al azar
                     ith = random.choice(range(new_obs.hands[other].len()))
                     c = new_obs.hands[other].get_card(ith)
-                    a = Action(c)
                     # Otro jugador juega una carta
-                    value = self.forward_model.play(new_obs, a, self.heuristic)
-                    n += 1
+                    value = self.forward_model.play(new_obs, Action(c), self.heuristic)
+                    played_cards += 1
                     other += 1
 
                 # Guarda el valor de nuestras cartas
