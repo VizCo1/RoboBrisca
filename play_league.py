@@ -9,7 +9,7 @@ from Game.ForwardModel import ForwardModel
 from Game.BriscaGame import BriscaGame
 from Game.GameState import GameState
 from Game.Heuristic import Heuristic
-from Players.OTLAPlayer import IAsauriosPlayer
+from Players.IAsaurios import IAsauriosPlayer
 from Players.AlwaysFirstPlayer import AlwaysFirstPlayer
 from Players.OSLAPlayer import OSLAPlayer
 from Players.RandomPlayer import RandomPlayer

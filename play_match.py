@@ -10,7 +10,7 @@ from Game.GameState import GameState
 from Game.Heuristic import Heuristic
 from Players.AlwaysFirstPlayer import AlwaysFirstPlayer
 from Players.HumanPlayer import HumanPlayer
-from Players.OTLAPlayer import IAsauriosPlayer
+from Players.IAsaurios import IAsauriosPlayer
 from Players.OSLAPlayer import OSLAPlayer
 from Players.SlowPlayer import SlowPlayer
 from Players.RandomPlayer import RandomPlayer
