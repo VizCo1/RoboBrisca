@@ -38,47 +38,94 @@ class IAsauriosPlayer(Player):
             factor = 1
         # AAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
-        # poner un while para evitar el fallo de tiempo
-        while (time.time() - initial_time < time_difference):
-            j = 0
-            new_obs_rand = observation.get_randomized_clone()
-            for action in list_actions:
-                new_obs = new_obs_rand.clone()
-                # Yo juego mi carta
-                value = self.forward_model.play(new_obs, action, self.heuristic)
-                played_cards = played_cards + 1
-                other = player_id + 1
+        # Antes de entrar al bucle, mirar en qué posición estoy
+        playing_cards = observation.playing_cards
+        trump = observation.trump_card
+        first_card = observation.playing_cards.get_card(0)
 
-                # while iteraciones
-                # Recoger cartas, barajar y volver a repartir
-                while played_cards < 4:
-                    if other == 4:
-                        other = 0
-                    # Seleccionar una carta al azar
-                    ith = random.choice(range(new_obs.hands[other].len()))
-                    c = new_obs.hands[other].get_card(ith)
-                    # Otro jugador juega una carta
-                    value = self.forward_model.play(new_obs, Action(c), self.heuristic)
-                    played_cards += 1
-                    other += 1
+        # Somos los ultimos -> jugar como humanos
+        if (played_cards == 3):
+            best_played_card_id = 0
+            for x in range(1, 3):
+                if (is_better_card(playing_cards.get_card(x), playing_cards.get_card(best_played_card_id), trump,
+                                   first_card)):
+                    best_played_card_id = x
 
-                # Guarda el valor de nuestras cartas
+            best_card_index = -1
+            # Compañero va ganando
+            if (best_played_card_id == 1):
 
-                values[j] += value * factor
+                #mirar la más alta que no es triunfo
+                for action_index in range(0, 3):
+                    action_card = list_actions[action_index].getCard()
 
-                j += 1
+                    #mirar si no es triunfo
+                    if action_card.getType() != trump.getType():
+                        #es la primera carta NO triunfo
+                        if best_card_index == -1:
+                            best_card_index = action_index
+                        #toca comparar cartas
+                        else:
+                            if action_card.getValue() > list_actions[best_card_index].getCard().getValue():
+                                best_card_index = action_index
 
-        # buscar el maximo en values una vez que hemos salido de los bucles
-        # print(values)
-        max = -math.inf
-        index = -1
-        for i in range(len(list_actions)):
-            if values[i] > max:
-                max = values[i]
-                index = i
-        # print(len(list_actions))
-        # print(index)
-        return list_actions[index]
+                #si todas son triunfos, coger la más baja
+                if best_card_index == -1:
+                    best_card_index = 0
+                    for action_index in range(1, 3):
+
+                        if list_actions[action_index].getCard().getValue() < list_actions[best_card_index].getCard().getValue():
+                            best_card_index = action_index
+
+            #somos los últimos pero equipo va perdiendo
+            else:
+                # Sacar la más baja?
+
+            return list_actions[best_card_index]
+
+        #no somos los ultimos -> IA
+        else:
+            # poner un while para evitar el fallo de tiempo
+            while (time.time() - initial_time < time_difference):
+                j = 0
+                new_obs_rand = observation.get_randomized_clone()
+                for action in list_actions:
+                    new_obs = new_obs_rand.clone()
+                    # Yo juego mi carta
+                    value = self.forward_model.play(new_obs, action, self.heuristic)
+                    played_cards = played_cards + 1
+                    other = player_id + 1
+
+                    # while iteraciones
+                    # Recoger cartas, barajar y volver a repartir
+                    while played_cards < 4:
+                        if other == 4:
+                            other = 0
+                        # Seleccionar una carta al azar
+                        ith = random.choice(range(new_obs.hands[other].len()))
+                        c = new_obs.hands[other].get_card(ith)
+                        # Otro jugador juega una carta
+                        value = self.forward_model.play(new_obs, Action(c), self.heuristic)
+                        played_cards += 1
+                        other += 1
+
+                    # Guarda el valor de nuestras cartas
+
+                    values[j] += value * factor
+
+                    j += 1
+
+            # buscar el maximo en values una vez que hemos salido de los bucles
+            # print(values)
+            max = -math.inf
+            index = -1
+            for i in range(len(list_actions)):
+                if values[i] > max:
+                    max = values[i]
+                    index = i
+            # print(len(list_actions))
+            # print(index)
+            return list_actions[index]
 
 # Soy 1,
 
