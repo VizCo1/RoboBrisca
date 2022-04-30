@@ -17,6 +17,12 @@ class IAsauriosPlayer(Player):
     def __str__(self):
         return "IAsauriosPlayer"
 
+    def get_points(self, observation):
+        points = 0
+        for c in observation.playing_cards:
+            points += c.getCard().getValue()
+        return points
+
     def think(self, observation, budget):
 
         initial_time = time.time()
@@ -53,7 +59,7 @@ class IAsauriosPlayer(Player):
 
             best_card_index = -1
             # Compañero va ganando
-            if (best_played_card_id == 1):
+            if best_played_card_id == 1:
 
                 #mirar la más alta que no es triunfo
                 for action_index in range(0, 3):
@@ -79,7 +85,46 @@ class IAsauriosPlayer(Player):
 
             #somos los últimos pero equipo va perdiendo
             else:
-                # Sacar la más baja?
+                n_triunfos = 0
+                for action_index in range(0, 3):
+                    action_card = list_actions[action_index].getCard()
+                    # mirar si no es triunfo
+                    if action_card.getType() != trump.getType():
+                        # es la primera carta NO triunfo
+                        if best_card_index == -1:
+                            best_card_index = action_index
+                        # toca comparar cartas
+                        else:
+                            if action_card.getValue() > list_actions[best_card_index].getCard().getValue():
+                                best_card_index = action_index
+                        # 1º Intentar ganar sin triunfos -> con la mejor carta
+                        # Se compara tu mejor carta no triunfo con las de los oponentes, si no ganas --> 2º PASO
+                        if not is_better_card(list_actions[best_card_index], playing_cards.get_card(0), trump,
+                                                   first_card) \
+                                and not is_better_card(list_actions[best_card_index], playing_cards.get_card(2), trump,
+                                                   first_card):
+                                best_card_index = -1
+                    else:
+                        n_triunfos += 1
+
+                #2º Intentar ganar con triunfos
+                if best_card_index == -1:  # comprobar si entramos a este punto
+                    #2.a Mirar si tenemos triunfos
+                    if n_triunfos != 0:
+                        # 2.a.1 Si hay 0 puntos -> llamar a worst_card_in_hand_index()
+                        if (not self.get_points(observation) > 0):
+                            best_card_index = self.worst_card_in_hand_index()
+
+                        #2.a.2 Hay más de 0 puntos -> peor carta con triunfos
+                        else:
+
+                    #2.b No tenemos triunfos -> llamar a worst_card_in_hand_index()
+                    else:
+                        best_card_index = self.worst_card_in_hand_index()
+
+                #3º No puedo ganar --> la peor carta
+                if best_card_index == -1:   #aun no tenemos carta elegida
+                    best_card_index = self.worst_card_in_hand_index()
 
             return list_actions[best_card_index]
 
@@ -127,65 +172,10 @@ class IAsauriosPlayer(Player):
             # print(index)
             return list_actions[index]
 
-# Soy 1,
+    #funcion que devuelve el indice de la peor carta que tenemos en la mano
+    def worst_card_in_hand_index(self):
+        actual_hand =llamar a worst_card_in_hand_index()
 
-# Soy 4, si gana mi compañero --> poner muchos puntos cuando merezca la pena, pero no triunfo
-
-# class IAsuariosHeuristic:
-#     def check_not_better_card(self, player_card, observation, others_card):
-#         if is_better_card(player_card, observation.playing_cards.get_card(others_card),
-#                           observation.trump_card, observation.playing_cards.get_card(0)):
-#             return False
-#         return True
-#
-#     # Returns the points that the player_id is going to win in the actual round.
-#     # If the player is going to lose, then returns -points.
-#     # player_id = gs.turn
-#     def get_score(self, observation, player_id):
-#
-#         if observation.playing_cards.len() == 1:
-#             return observation.playing_cards.get_card(0).get_value()
-#
-#         cards = observation.playing_cards.get_cards()
-#         points = 0
-#         #Palo de la primera carta
-#         #Puntos de mi equipo
-#         #Puntos del otro equipo
-#         for card in cards:
-#             points += card.get_value()
-#
-#         player_card = observation.playing_cards.get_last_card()
-#
-#         # Obtener el card.get_value() de tu equipo y el del otro equipo no se
-#         # Tener en cuenta el palo de las cartas ?¿
-#
-#         # is_better = True
-#
-#         # Hay 1 carta, soy el segundo jugador
-#         if observation.playing_cards.len() == 1:
-#             if self.check_not_better_card(player_card, observation, 0):
-#                 return -points
-#
-#         # Hay 2 cartas, soy el tercer jugador
-#         elif observation.playing_cards.len() == 2:
-#             if self.check_not_better_card(player_card, observation, 1):
-#                 if self.check_not_better_card(observation.playing_cards.get_card(0), observation, 1):
-#                     return -points
-#
-#         # Hay 3 cartas, soy el cuarto jugador
-#         elif observation.playing_cards.len() == 3:
-#             if self.check_not_better_card(player_card, observation, 2):
-#                 if self.check_not_better_card(player_card, observation, 0):
-#                     if self.check_not_better_card(observation.playing_cards.get_card(1), observation, 2):
-#                         if self.check_not_better_card(observation.playing_cards.get_card(1), observation, 0):
-#                             return -points
-#
-#         return points
-#
-#         # if is_better:
-#         #    return points
-#         # else:
-#         #    return -points
 
 class MyHeuristic:
     def get_score(self, observation, player_id):
