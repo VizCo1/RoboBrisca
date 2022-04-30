@@ -80,7 +80,7 @@ class IAsauriosPlayer(Player):
                 #si todas son triunfos, coger la más baja
                 if best_card_index == -1:
                     best_card_index = 0
-                    for action_index in range(1, 3):
+                    for action_index in range(len(list_actions)):
 
                         if list_actions[action_index].get_card().get_value() < list_actions[best_card_index].get_card().get_value():
                             best_card_index = action_index
@@ -124,7 +124,6 @@ class IAsauriosPlayer(Player):
                                 if list_actions[index].get_card().get_type() == trump.get_type() \
                                     and list_actions[index].get_card().get_value() < list_actions[best_card_index].get_card().get_value():
                                     best_card_index = index
-
 
                     #2.b No tenemos triunfos -> llamar a worst_card_in_hand_index()
                     else:
