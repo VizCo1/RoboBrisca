@@ -49,7 +49,7 @@ if __name__ == '__main__':
     controlling_time = True  # If the player time to think is going to be controlled True/False
     save_game = False         # If the game is saved to be studied in the future True/False
     save_name = "Out/game"
-    n_matches = 10          # Matches between two bots
+    n_matches = 100          # Matches between two bots
     sleep_time = 0           # time to sleep between games, It's just to add excitement for public watching the games
 
     game = BriscaGame()             # Game class

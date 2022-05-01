@@ -29,9 +29,9 @@ class IAsauriosPlayer(Player):
         time_difference = budget * 0.9  # para tener tiempo de margen
 
         # Lista de acciones del turno
-        list_actions = observation.get_list_actions()
-        if len(list_actions) == 1:
-            return list_actions[0]
+        l_actions = observation.get_list_actions()
+        if len(l_actions) == 1:
+            return l_actions[0]
 
         values = [0, 0, 0]
 
@@ -62,34 +62,36 @@ class IAsauriosPlayer(Player):
             best_card_index = -1
             # Compañero va ganando
             if best_played_card_id == 1:
-
+                ##print("Mi amigo gana la ronda")
                 #mirar la más alta que no es triunfo
-                for action_index in range(len(list_actions)):
-                    action_card = list_actions[action_index].get_card()
+                for action_index in range(len(l_actions)):
+                    action_card = l_actions[action_index].get_card()
 
-                    #mirar si no es triunfo
+                    #mirar si no es triunfo y buscar la carta con más puntos
                     if action_card.get_type() != trump.get_type():
                         #es la primera carta NO triunfo
                         if best_card_index == -1:
                             best_card_index = action_index
                         #toca comparar cartas
                         else:
-                            if action_card.get_value() > list_actions[best_card_index].get_card().get_value():
+                            if action_card.get_value() > l_actions[best_card_index].get_card().get_value():
                                 best_card_index = action_index
 
                 #si todas son triunfos, coger la más baja
                 if best_card_index == -1:
+                    ##print("Todas nuestras cartas son triunfos")
                     best_card_index = 0
-                    for action_index in range(len(list_actions)):
+                    for action_index in range(len(l_actions)):
 
-                        if list_actions[action_index].get_card().get_value() < list_actions[best_card_index].get_card().get_value():
+                        if l_actions[action_index].get_card().get_value() < l_actions[best_card_index].get_card().get_value():
                             best_card_index = action_index
 
             #somos los últimos pero equipo va perdiendo
             else:
+                ##print("Nuestro compañero no puede ganar, intentamos ganar nosotros")
                 n_triunfos = 0
-                for action_index in range(len(list_actions)):
-                    action_card = list_actions[action_index].get_card()
+                for action_index in range(len(l_actions)):
+                    action_card = l_actions[action_index].get_card()
                     # mirar si no es triunfo
                     if action_card.get_type() != trump.get_type():
                         # es la primera carta NO triunfo
@@ -97,16 +99,17 @@ class IAsauriosPlayer(Player):
                             best_card_index = action_index
                         # toca comparar cartas
                         else:
-                            if action_card.get_value() > list_actions[best_card_index].get_card().get_value():
+                            if action_card.get_value() > l_actions[best_card_index].get_card().get_value():
                                 best_card_index = action_index
                     else:
                         n_triunfos += 1
                 # 1º Intentar ganar sin triunfos -> con la mejor carta
                 # Se compara tu mejor carta no triunfo con las de los oponentes, si no ganas --> 2º PASO
-                if not is_better_card(list_actions[best_card_index].get_card(), playing_cards.get_card(0), trump,
+                if not is_better_card(l_actions[best_card_index].get_card(), playing_cards.get_card(0), trump,
                                       first_card) \
-                        and not is_better_card(list_actions[best_card_index].get_card(), playing_cards.get_card(2), trump,
+                        and not is_better_card(l_actions[best_card_index].get_card(), playing_cards.get_card(2), trump,
                                                first_card):
+                    ##print("No podemos ganar sin utilizar triunfos")
                     best_card_index = -1
 
                 #2º Intentar ganar con triunfos
@@ -114,26 +117,93 @@ class IAsauriosPlayer(Player):
                     #2.a Mirar si tenemos triunfos
                     if n_triunfos != 0:
                         # 2.a.1 Si hay 0 puntos -> llamar a worst_card_in_hand_index()
-                        if self.get_points(observation) ==  0:
-                            best_card_index = self.worst_card_in_hand_index(list_actions, trump)
+                        if self.get_points(observation) == 0:
+                            # AL TIRAR LA PEOR CARTA PODEMOS TIRAR UNA CARTA Y PERDER LA RONDA --> LOS RIVALES SE LLEVAN ESOS PUNTOS
+                            worst_c_i = self.worst_card_in_hand_index(l_actions, trump)
+
+                            if l_actions[worst_c_i].get_card().get_value() == 0:
+                                best_card_index = worst_c_i
+
+                            else:
+                                cards_on_hand = len(l_actions)
+                                temp_best_card_index = self.best_card_in_hand_index(l_actions)
+                                if cards_on_hand == 3:
+                                    medium_best_card_index = self.medium_card_in_hand_index(temp_best_card_index, worst_c_i)
+
+                                rival1_triunfo = False
+                                rival2_triunfo = False
+                                if playing_cards.get_card(0).get_type() == trump.get_type():
+                                    rival1_triunfo = True
+
+                                if playing_cards.get_card(2).get_type() == trump.get_type():
+                                    rival2_triunfo = True
+
+                                if rival1_triunfo and rival2_triunfo:
+                                    if is_better_card(l_actions[worst_c_i].get_card(),
+                                                      playing_cards.get_card(0), trump, first_card) \
+                                            and is_better_card(l_actions[worst_c_i].get_card(),
+                                                               playing_cards.get_card(2), trump, first_card):
+                                        best_card_index = worst_c_i
+
+                                    elif cards_on_hand == 3 and is_better_card(l_actions[medium_best_card_index].get_card(),
+                                                        playing_cards.get_card(0), trump, first_card) and \
+                                            is_better_card(l_actions[medium_best_card_index].get_card(),
+                                                           playing_cards.get_card(2), trump, first_card):
+                                        best_card_index = medium_best_card_index
+
+                                    elif is_better_card(l_actions[temp_best_card_index].get_card(),
+                                                        playing_cards.get_card(0), trump, first_card) and \
+                                            is_better_card(l_actions[temp_best_card_index].get_card(),
+                                                           playing_cards.get_card(2), trump, first_card):
+                                        best_card_index = temp_best_card_index
+
+                                elif rival1_triunfo and not rival2_triunfo:
+                                    if is_better_card(l_actions[worst_c_i].get_card(),
+                                                      playing_cards.get_card(0), trump, first_card):
+                                        best_card_index = worst_c_i
+
+                                    elif cards_on_hand == 3 and is_better_card(l_actions[medium_best_card_index].get_card(),
+                                                        playing_cards.get_card(0), trump, first_card):
+                                        best_card_index = medium_best_card_index
+
+                                    elif is_better_card(l_actions[temp_best_card_index].get_card(),
+                                                        playing_cards.get_card(0), trump, first_card):
+                                        best_card_index = temp_best_card_index
+
+                                elif rival2_triunfo and not rival1_triunfo:
+                                    if is_better_card(l_actions[worst_c_i].get_card(),
+                                                      playing_cards.get_card(2), trump, first_card):
+                                        best_card_index = worst_c_i
+
+                                    elif cards_on_hand == 3 and is_better_card(l_actions[medium_best_card_index].get_card(),
+                                                        playing_cards.get_card(2), trump, first_card):
+                                        best_card_index = medium_best_card_index
+
+                                    elif is_better_card(l_actions[temp_best_card_index].get_card(),
+                                                        playing_cards.get_card(2), trump, first_card):
+                                        best_card_index = temp_best_card_index
+
+                                else:
+                                    best_card_index = worst_c_i
 
                         #2.a.2 Hay más de 0 puntos -> peor carta con triunfos
                         else:
                             best_card_index = 0
-                            for index in range(len(list_actions)):
-                                if list_actions[index].get_card().get_type() == trump.get_type() \
-                                    and list_actions[index].get_card().get_value() < list_actions[best_card_index].get_card().get_value():
+                            for index in range(len(l_actions)):
+                                if l_actions[index].get_card().get_type() == trump.get_type() \
+                                    and l_actions[index].get_card().get_value() < l_actions[best_card_index].get_card().get_value():
                                     best_card_index = index
 
                     #2.b No tenemos triunfos -> llamar a worst_card_in_hand_index()
                     else:
-                        best_card_index = self.worst_card_in_hand_index(list_actions, trump)
+                        best_card_index = self.worst_card_in_hand_index(l_actions, trump)
 
                 #3º No puedo ganar --> la peor carta
                 if best_card_index == -1:   #aun no tenemos carta elegida
-                    best_card_index = self.worst_card_in_hand_index(list_actions, trump)
+                    print("Esto se usa???")
+                    best_card_index = self.worst_card_in_hand_index(l_actions, trump)
 
-            return list_actions[best_card_index]
+            return l_actions[best_card_index]
 
         #no somos los ultimos -> IA
         else:
@@ -141,7 +211,7 @@ class IAsauriosPlayer(Player):
             while time.time() - initial_time < time_difference:
                 j = 0
                 new_obs_rand = observation.get_randomized_clone()
-                for action in list_actions:
+                for action in l_actions:
                     new_obs = new_obs_rand.clone()
                     # Yo juego mi carta
                     value = self.forward_model.play(new_obs, action, self.heuristic)
@@ -171,13 +241,13 @@ class IAsauriosPlayer(Player):
             # print(values)
             max = -math.inf
             index = -1
-            for i in range(len(list_actions)):
+            for i in range(len(l_actions)):
                 if values[i] > max:
                     max = values[i]
                     index = i
-            # print(len(list_actions))
+            # print(len(l_actions))
             # print(index)
-            return list_actions[index]
+            return l_actions[index]
 
     #funcion que devuelve el indice de la peor carta que tenemos en la mano
     def worst_card_in_hand_index(self, list_actions, trump):
@@ -201,6 +271,59 @@ class IAsauriosPlayer(Player):
                     worst_card_index = i
 
         return worst_card_index
+
+        # funcion que devuelve el indice de la peor carta que tenemos en la mano
+
+    def best_card_in_hand_index(self, list_actions):
+        best_card_index = -1
+        max = -math.inf
+
+        for i in range(len(list_actions)):
+            actual_card = list_actions[i].get_card()
+            if actual_card.get_value() > max:
+                max = actual_card.get_value()
+                best_card_index = i
+
+        return best_card_index
+
+    def medium_card_in_hand_index(self, best, worst):
+        best_card_index = best
+        worst_card_index = worst
+
+        if best_card_index == 0:
+            if worst_card_index == 1:
+                return 2
+            elif worst_card_index == 2:
+                return 1
+        if best_card_index == 1:
+            if worst_card_index == 0:
+                return 2
+            elif worst_card_index == 2:
+                return 0
+        if best_card_index == 2:
+            if worst_card_index == 1:
+                return 0
+            if worst_card_index == 0:
+                return 1
+
+        if worst_card_index == 0:
+            if best_card_index == 1:
+                return 2
+            elif best_card_index == 2:
+                return 1
+        if worst_card_index == 1:
+            if best_card_index == 0:
+                return 2
+            elif best_card_index == 2:
+                return 0
+        if worst_card_index == 2:
+            if best_card_index == 0:
+                return 1
+            elif best_card_index == 1:
+                return 0
+
+        return print("ERROR")
+
 
 class MyHeuristic:
     def get_score(self, observation, player_id):
